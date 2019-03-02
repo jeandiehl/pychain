@@ -23,4 +23,4 @@ class TestBlockchain(TestCase):
         trans6 = wallet2.create_transaction(wallet1.get_public_address(), 12.0)
 
     def test_add_transaction(self):
-
+        pass
