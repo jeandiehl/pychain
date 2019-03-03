@@ -1,7 +1,7 @@
-import Wallet
-import Transaction
-
 from unittest import TestCase
+
+import Transaction
+import Wallet
 
 
 class TestWallet(TestCase):
@@ -16,6 +16,13 @@ class TestWallet(TestCase):
         result = b'-----BEGIN PUBLIC KEY-----\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCeWC3lCcA7pPP1/7aQaW5iLSm+\nA9THkEvAvnILkVtF1UKxBkTN6x5Jz5kbTbi56lYIZydt3e+sg8r8BD5qMR6O193d\nreVKvp4eRQbQOi2Ys/0GyI5k8FsqoYSaEZ3mA/0QJWOQrYHcX99idqjon/Mzytu2\nvPQktEZV4eu+p2YV5wIDAQAB\n-----END PUBLIC KEY-----'
         self.assertEqual(result, wallet.get_public_address())
 
+    def test_sender_receiver_equal_error(self):
+        wallet = Wallet.Wallet('other')
+
+        with self.assertRaises(RuntimeError) as context:
+            wallet.create_transaction(wallet.get_public_address(), 100.0)
+        self.assertTrue('Receiver address can not be the same like sender address.' in str(context.exception))
+
     def test_transaction_creation(self):
         wallet_sender = Wallet.Wallet('geheim')
         wallet_receiver = Wallet.Wallet('other')
@@ -24,4 +31,5 @@ class TestWallet(TestCase):
 
         transaction_compare = Transaction.Transaction(wallet_sender.get_public_address(), wallet_receiver.get_public_address(), 100.0)
         transaction_compare.signature = transaction.signature
+        print(transaction)
         self.assertEqual(transaction, transaction_compare)

@@ -1,6 +1,7 @@
 import os
-from Crypto.PublicKey import RSA
+
 from Crypto.Protocol.KDF import PBKDF2
+from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
 
 import Transaction
@@ -15,16 +16,16 @@ SALT = 'PYCOIN'
 master_key = ''
 
 
-class Wallet(object):
+class GenesisWallet(object):
     def __init__(self, seed):
         global master_key
+        self.key = RSA
         master_key = PBKDF2(seed, SALT, count=10000)
-        self.generate_new_key(seed)
+        self.generate_new_key()
 
-    def generate_new_key(self, seed):
+    def generate_new_key(self):
         my_rand.counter = 0
         self.key = RSA.generate(KEY_LENGTH, randfunc=my_rand)
-        #self.encrypted_key = self.key.export_key('PEM', passphrase=seed, pkcs=PKCS, protection=KEY_PROTECTION)
 
     def get_public_address(self):
         return self.key.publickey().export_key()
@@ -35,6 +36,10 @@ class Wallet(object):
         return PKCS1_v1_5.new(rsa_private_key).sign(transaction.get_hash())
 
     def create_transaction(self, receiver_address, amount):
+        if self.get_public_address() == receiver_address:
+            msg = 'Receiver address can not be the same like sender address.'
+            raise RuntimeError(msg)
+
         transaction = Transaction.Transaction(self.get_public_address(), receiver_address, amount)
         signature = self.calculate_signature(transaction)
         transaction.set_signature(signature)
@@ -44,6 +49,15 @@ class Wallet(object):
         else:
             msg = 'Can not create transaction, because signature could not be verified!'
             raise RuntimeError(msg)
+
+
+class Wallet(GenesisWallet):
+    def __init__(self, seed):
+        msg = 'Wallet seed value can not be an empty string'
+        if seed == '':
+            raise ValueError(msg)
+
+        super(Wallet, self).__init__(seed)
 
 
 def my_rand(n):

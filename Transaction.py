@@ -1,17 +1,12 @@
+import datetime
+
 from Crypto.Hash import SHA256
-from Crypto.Hash import SHA
 from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
 
-import datetime
 
-
-class Transaction(object):
+class GenesisTransaction(object):
     def __init__(self, sender, receiver, amount):
-        if amount <= 0.0:
-            msg = 'Transaction amount can only be a positive value.'
-            raise ValueError(msg)
-
         self.amount = amount
         self.sender = sender
         self.receiver = receiver
@@ -35,3 +30,23 @@ class Transaction(object):
         transaction_hash = SHA256.new()
         transaction_hash.update('sender: {}, receiver: {}, self.amount: {}, self.timestamp: {}'.format(self.sender, self.receiver, self.amount, self.timestamp).encode('utf8'))
         return transaction_hash
+
+    def __eq__(self, other):
+        return self.sender == other.sender and self.receiver == other.receiver and self.amount == other.amount and self.signature == other.signature
+
+    def __ne__(self, other):
+        return self.sender != other.sender or self.receiver != other.receiver or self.amount != other.amount or self.signature != other.signature
+
+    def __str__(self):
+        return "{{\n\t'sender': {},\n\t'receiver': {},\n\t'amount': {},\n\t'timestamp': {}\n}}".format(self.sender,
+                                                                                                       self.receiver,
+                                                                                                       self.amount,
+                                                                                                       self.timestamp)
+
+
+class Transaction(GenesisTransaction):
+    def __init__(self, sender, receiver, amount):
+        if amount <= 0.0:
+            msg = 'Transaction amount can only be a positive value.'
+            raise ValueError(msg)
+        super(Transaction, self).__init__(sender, receiver, amount)
