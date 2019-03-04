@@ -4,11 +4,12 @@ import Wallet
 
 
 class Blockchain(object):
-    def __init__(self, consensus_mechanism, hash_algorithm):
+    def __init__(self, consensus_mechanism, hash_algorithm, preferences):
         self._blocks = []
         self.pending_transactions = []
         self.consensus_mechanism = consensus_mechanism
         self.hash_algorithm = hash_algorithm
+        self.preferences = preferences
 
     def add_transaction(self, transaction):
         if not transaction.is_signature_valid():
@@ -45,3 +46,12 @@ class Blockchain(object):
                                                              genesis_wallet.get_public_address(), 0.0)
         genesis_block = Block.Block(0, genesis_transaction, 0)
         self._blocks = [genesis_block]
+
+    def generate_new_block(self, transactions):
+        last_block = self.get_last_block()
+
+        # new_block = Block.Block(last_block.index + 1, None, )
+
+    def mine_block(self, block):
+        # TODO implement mining
+        self.hash_algorithm.digest(str(block))

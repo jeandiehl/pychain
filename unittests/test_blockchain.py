@@ -8,9 +8,11 @@ import Wallet
 
 class TestBlockchain(TestCase):
     def setUp(self):
-        self.ha = HashAlgorithm.HashAlgorithm()
+        self.preferences = {'MaxBlockSize': 1048576, 'MiningReward': 10.0, 'MiningDifficulty': 1}
+        self.ha = HashAlgorithm.SHA256HashAlgorithm()
         self.ca = ConsensusAlgorithm.ConsensusAlgorithm()
-        self.bc = Blockchain.Blockchain(self.ca, self.ha)
+        self.bc = Blockchain.Blockchain(self.ca, self.ha, self.preferences)
+
 
     def test_add_transaction(self):
         wallet1 = Wallet.Wallet('geheim')
@@ -29,3 +31,6 @@ class TestBlockchain(TestCase):
         self.bc._generate_genesis_block()
         last_block = self.bc.get_last_block()
         print(last_block)
+
+    def test_mine_empty_block(self):
+        self.bc.mine_block(None)
