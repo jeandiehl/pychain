@@ -32,16 +32,10 @@ class GenesisTransaction(object):
         return transaction_hash
 
     def __eq__(self, other):
-        return self.sender == other.sender and self.receiver == other.receiver and self.amount == other.amount and self.signature == other.signature
+        return self.sender == other.sender and self.receiver == other.receiver and self.amount == other.amount and self.signature == other.signature and self.timestamp == other.timestamp
 
     def __ne__(self, other):
-        return self.sender != other.sender or self.receiver != other.receiver or self.amount != other.amount or self.signature != other.signature
-
-    def __str__(self):
-        return "{{\n\t'sender': {},\n\t'receiver': {},\n\t'amount': {},\n\t'timestamp': {}\n}}".format(self.sender,
-                                                                                                       self.receiver,
-                                                                                                       self.amount,
-                                                                                                       self.timestamp)
+        return self.sender != other.sender or self.receiver != other.receiver or self.amount != other.amount or self.signature != other.signature or self.timestamp != other.timestamp
 
 
 class Transaction(GenesisTransaction):

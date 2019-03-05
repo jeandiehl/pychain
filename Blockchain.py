@@ -1,15 +1,23 @@
+import datetime
+
 import Block
-import Transaction
-import Wallet
+
+
+class ChainSettings(object):
+    def __init__(self):
+        self.max_block_size = 1048576
+        self.mining_reward = 10.0
+        self.mining_difficulty = 3
 
 
 class Blockchain(object):
-    def __init__(self, consensus_mechanism, hash_algorithm, preferences):
+    def __init__(self, consensus_mechanism, hash_algorithm, settings):
         self._blocks = []
         self.pending_transactions = []
         self.consensus_mechanism = consensus_mechanism
         self.hash_algorithm = hash_algorithm
-        self.preferences = preferences
+        self.settings = settings
+        self._generate_genesis_block()
 
     def add_transaction(self, transaction):
         if not transaction.is_signature_valid():
@@ -41,10 +49,9 @@ class Blockchain(object):
         return self._blocks[-1]
 
     def _generate_genesis_block(self):
-        genesis_wallet = Wallet.GenesisWallet('')
-        genesis_transaction = Transaction.GenesisTransaction(genesis_wallet.get_public_address(),
-                                                             genesis_wallet.get_public_address(), 0.0)
-        genesis_block = Block.Block(0, genesis_transaction, 0)
+        genesis_block = Block.GenesisBlock()
+
+        self.mine_block(genesis_block)
         self._blocks = [genesis_block]
 
     def generate_new_block(self, transactions):
@@ -54,4 +61,11 @@ class Blockchain(object):
 
     def mine_block(self, block):
         # TODO implement mining
-        self.hash_algorithm.digest(str(block))
+        hash = self.hash_algorithm.digest(block.get_combined_transaction_bash())
+        difficulty = self.settings.mining_difficulty
+
+        while hash[:difficulty] != '0' * difficulty:
+            block.nonce += 1
+            hash = self.hash_algorithm.digest(block.get_combined_transaction_bash())
+        block.timestamp = datetime.datetime.now()
+        block.hash = hash
