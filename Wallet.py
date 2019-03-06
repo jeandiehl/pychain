@@ -16,8 +16,12 @@ SALT = 'PYCOIN'
 master_key = ''
 
 
-class GenesisWallet(object):
+class Wallet(object):
     def __init__(self, seed):
+        msg = 'Wallet seed value can not be an empty string'
+        if seed == '':
+            raise ValueError(msg)
+
         global master_key
         self.key = RSA
         master_key = PBKDF2(seed, SALT, count=10000)
@@ -49,15 +53,6 @@ class GenesisWallet(object):
         else:
             msg = 'Can not create transaction, because signature could not be verified!'
             raise RuntimeError(msg)
-
-
-class Wallet(GenesisWallet):
-    def __init__(self, seed):
-        msg = 'Wallet seed value can not be an empty string'
-        if seed == '':
-            raise ValueError(msg)
-
-        super(Wallet, self).__init__(seed)
 
 
 def my_rand(n):

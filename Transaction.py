@@ -5,8 +5,12 @@ from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
 
 
-class GenesisTransaction(object):
+class Transaction(object):
     def __init__(self, sender, receiver, amount):
+        if amount <= 0.0:
+            msg = 'Transaction amount can only be a positive value.'
+            raise ValueError(msg)
+
         self.amount = amount
         self.sender = sender
         self.receiver = receiver
@@ -21,7 +25,7 @@ class GenesisTransaction(object):
         if self.signature == '':
             msg = "Signature is empty and has value =''"
             raise ValueError(msg)
-
+        # TODO remove concrete hashing function
         rsa_public_key = RSA.import_key(self.sender)
         verifier = PKCS1_v1_5.new(rsa_public_key)
         return verifier.verify(self.get_hash(), self.signature)
@@ -38,9 +42,24 @@ class GenesisTransaction(object):
         return self.sender != other.sender or self.receiver != other.receiver or self.amount != other.amount or self.signature != other.signature or self.timestamp != other.timestamp
 
 
-class Transaction(GenesisTransaction):
+class GenesisTransaction(Transaction):
     def __init__(self, sender, receiver, amount):
-        if amount <= 0.0:
-            msg = 'Transaction amount can only be a positive value.'
-            raise ValueError(msg)
-        super(Transaction, self).__init__(sender, receiver, amount)
+        self.amount = amount
+        self.sender = sender
+        self.receiver = receiver
+        self.signature = ''
+
+        self.timestamp = datetime.datetime.now(datetime.timezone.utc)
+
+
+class MiningRewardTransaction(Transaction):
+    def __init__(self, receiver, amount):
+        self.amount = amount
+        self.sender = None
+        self.receiver = receiver
+        self.signature = None
+
+        self.timestamp = datetime.datetime.now(datetime.timezone.utc)
+
+    def is_signature_valid(self):
+        return False
