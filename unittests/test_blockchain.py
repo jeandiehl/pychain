@@ -41,7 +41,15 @@ class TestBlockchain(TestCase):
         self.bc.add_transaction(trans4)
         self.bc.add_transaction(trans5)
         self.bc.add_transaction(trans6)
-        # TODO mine pending transactions
+
+        new_block = self.bc.generate_new_block(self.bc.pending_transactions)
+        self.bc.mine_block(new_block, self.wallet3)
+        self.bc.append_block(new_block)
+
+        self.assertEqual(self.bc.pending_transactions, [])
+        self.assertEqual(self.bc.get_balance(self.wallet1.get_public_address()), 13.0)
+        self.assertEqual(self.bc.get_balance(self.wallet2.get_public_address()), 6.0)
+        self.assertEqual(self.bc.get_balance(self.wallet3.get_public_address()), 21.0)
 
     def test_generate_genesis_block(self):
         self.bc._generate_genesis_block()

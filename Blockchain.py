@@ -1,3 +1,4 @@
+import copy
 import datetime
 
 import Block
@@ -53,6 +54,7 @@ class Blockchain(object):
                 yield transaction
 
     def get_balance(self, address):
+        # TODO balance with pending transactions
         balance = 0.0
         sended_transactions = self._get_transactions_with_sender(address)
         received_transactions = self._get_transactions_with_receiver(address)
@@ -77,10 +79,13 @@ class Blockchain(object):
         self._blocks = [genesis_block]
 
     def generate_new_block(self, transactions):
-        # TODO check for valid transactions
-
         last_block = self.get_last_block()
-        return Block.Block(last_block.index + 1, transactions, last_block.hash)
+        new_block = Block.Block(last_block.index + 1, copy.deepcopy(transactions), last_block.hash)
+        if new_block.__sizeof__() > self.settings.max_block_size:
+            msg = 'Block can not be generated, because block size exeeds maximum size of {}.' \
+                .format(self.settings.max_block_size)
+            raise RuntimeError(msg)
+        return new_block
 
     def mine_block(self, block, miner_wallet=None):
         if miner_wallet:
@@ -105,9 +110,14 @@ class Blockchain(object):
 
         return True
 
+    def remove_mined_transactions(self, block):
+        transactions_to_keep = [trans for trans in self.pending_transactions if trans not in block.transactions]
+        self.pending_transactions = copy.deepcopy(transactions_to_keep)
+
     def append_block(self, block):
         if not self.is_connection_valid(self.get_last_block(), block):
             msg = 'The new block can not be appended, because the connection is not valid.'
             raise RuntimeError(msg)
-        # TODO remove mined transactions from pending_transactions
+
         self._blocks.append(block)
+        self.remove_mined_transactions(block)
